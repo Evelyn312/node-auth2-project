@@ -46,22 +46,32 @@ router.post("/api/login", async (req, res, next) => {
 
 		if (!passwordValid) {
 			return res.status(401).json({
-				message: "Invalid Credentials",
+				message: "Invalid username/password",
 			})
 		}
 
 		// generate a new JSON web token
 		const token = jwt.sign({
 			userID: user.id,
-			userRole: "admin", // this value would normally come from the database
+			userRole: "basic", // this value would normally come from the database
 		}, process.env.JWT_SECRET)
 
 		// send the token back as a cookie
 		res.cookie("token", token)
 
 		res.json({
-			message: `Welcome ${user.username}!`,
+            message: `Welcome ${user.username}!`,
+            // token: token,
+            token,
 		})
+	} catch(err) {
+		next(err)
+	}
+})
+
+router.get("/api/users", restrict("basic"), async (req, res, next) => {
+	try {
+		res.json(await Users.find())
 	} catch(err) {
 		next(err)
 	}
